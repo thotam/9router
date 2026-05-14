@@ -342,7 +342,7 @@ export function createSSEStream(options = {}) {
 
         if (flushed?.length > 0) {
           for (const item of flushed) {
-            if (item == null) continue; // Skip null items — formatSSE(null) emits "data: null" which crashes n8n
+            if (item == null) continue; // Skip null flush items — see translateResponse null guard
             const output = formatSSE(item, sourceFormat);
             reqLogger?.appendConvertedChunk?.(output);
             controller.enqueue(sharedEncoder.encode(output));
