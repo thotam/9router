@@ -162,11 +162,12 @@ export function translateRequest(sourceFormat, targetFormat, model, body, stream
 // Translate response chunk: target -> openai -> source
 export function translateResponse(targetFormat, sourceFormat, chunk, state) {
   ensureInitialized();
-  // If same format, return as-is — except the tool name may still be cloaked:
+  // If same format, return as-is (skip null flush chunks) — except the tool name may still be cloaked:
   // translateRequest() suffixes client tools for OAuth-cloaked Claude providers
   // even when no format conversion is needed, so streamed tool_use blocks must
   // be decloaked here or the client sees an unknown ("_ide"-suffixed) tool.
   if (sourceFormat === targetFormat) {
+    if (chunk == null) return [];
     return [restoreToolNames(decloakStreamChunk(chunk, state?.toolNameMap), state?.toolNameMap)];
   }
 

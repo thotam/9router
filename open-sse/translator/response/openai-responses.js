@@ -500,6 +500,7 @@ export function openaiResponsesToOpenAIResponse(chunk, state) {
     state.respToolChatIndex ??= new Map();
     // Indices that already received argument deltas (guards done-with-args).
     state.respToolArgsEmitted ??= new Set();
+    state.firstContentSent = false; // Track to send role: "assistant" in first delta chunk
   }
 
   // Text content delta
@@ -509,7 +510,10 @@ export function openaiResponsesToOpenAIResponse(chunk, state) {
 
     return buildChunk(
       { id: state.chatId, created: state.created, model: state.model || MODEL_FALLBACK },
-      { content: delta }
+      Object.assign(
+        !state.firstContentSent ? (state.firstContentSent = true, { role: "assistant" }) : {},
+        { content: delta }
+      )
     );
   }
 
@@ -538,14 +542,17 @@ export function openaiResponsesToOpenAIResponse(chunk, state) {
 
     return buildChunk(
       { id: state.chatId, created: state.created, model: state.model || MODEL_FALLBACK },
-      {
-        tool_calls: [{
-          index: idx,
-          id: state.currentToolCallId,
-          type: OPENAI_BLOCK.FUNCTION,
-          function: { name: item.name || "", arguments: "" }
-        }]
-      }
+      Object.assign(
+        !state.firstContentSent ? (state.firstContentSent = true, { role: "assistant", content: null }) : {},
+        {
+          tool_calls: [{
+            index: idx,
+            id: state.currentToolCallId,
+            type: OPENAI_BLOCK.FUNCTION,
+            function: { name: item.name || "", arguments: "" }
+          }]
+        }
+      )
     );
   }
 
