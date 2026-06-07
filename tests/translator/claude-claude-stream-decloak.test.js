@@ -43,7 +43,6 @@ describe("Claude → Claude streaming passthrough (OAuth tool cloak)", () => {
   });
 
   it("tolerates the null flush chunk", () => {
-    const [out] = translateResponse(FORMATS.CLAUDE, FORMATS.CLAUDE, null, state);
-    expect(out).toBeNull();
+    expect(translateResponse(FORMATS.CLAUDE, FORMATS.CLAUDE, null, state)).toEqual([]);
   });
 });
